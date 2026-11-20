@@ -1,0 +1,36 @@
+name: Attach verified Resonance 2.2.1 disk image
+on:
+  push:
+    branches:
+      - release-upload/v2.2.1
+permissions:
+  contents: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Verify and attach the disk image and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sha256sum -c SHA256SUMS.txt
+          release_id="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v2.2.1" --jq .id)"
+          for filename in Resonance-2.2.1-macOS.dmg SHA256SUMS.txt; do
+            assets="$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id/assets")"
+            if jq -e --arg name "$filename" 'any(.[]; .name == $name and .state == "uploaded")' <<<"$assets" >/dev/null; then
+              echo "Release already contains $filename"
+              continue
+            fi
+            starter_id="$(jq -r --arg name "$filename" '.[] | select(.name == $name and .state == "starter" and .size == 0) | .id' <<<"$assets")"
+            if [[ -n "$starter_id" ]]; then
+              gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$starter_id"
+            fi
+            gh release upload v2.2.1 "$filename" --repo "$GITHUB_REPOSITORY"
+          done
