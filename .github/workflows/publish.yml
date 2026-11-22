@@ -1,0 +1,20 @@
+name: Publish verified Resonance 2.3.0
+on:
+  push:
+    branches: [release-upload/v2.3.0]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - name: Verify package and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sha256sum -c SHA256SUMS.txt
+          gh release create v2.3.0 Resonance-2.3.0-macOS.dmg SHA256SUMS.txt --verify-tag --latest --repo "$GITHUB_REPOSITORY" --title 'Resonance 2.3.0 — Atelier Collection' --notes-file RELEASE.md
