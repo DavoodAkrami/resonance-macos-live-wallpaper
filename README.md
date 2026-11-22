@@ -4,7 +4,7 @@
 
 # Resonance — Live Wallpaper & Music Visualizer for macOS
 
-Resonance is a native Mac live wallpaper app with **45 animated desktop wallpapers**. Play music to drive one of 20 real-time audio-reactive scenes, or choose from 25 ambient wallpapers that animate independently. Metal renders each scene behind your Finder icons.
+Resonance is a native Mac live wallpaper app with **65 desktop wallpapers**. Play music to drive one of 20 real-time audio-reactive scenes, choose from 35 ambient live wallpapers, or apply one of 10 still compositions. Metal renders each scene behind your Finder icons.
 
 **[Download Resonance for macOS](https://github.com/DavoodAkrami/resonance-macos-live-wallpaper/releases/latest)** · [Browse all wallpapers](docs/wallpapers.md)
 
@@ -22,6 +22,12 @@ Resonance is a native Mac live wallpaper app with **45 animated desktop wallpape
 - **Menu bar startup.** Enable **Open at login** to resume in the background. Open the studio from the menu bar when you want to browse or adjust a wallpaper.
 - **Frame-rate control.** Choose Adaptive, 60 FPS or 30 FPS. Battery and covered-desktop settings can reduce rendering activity.
 
+## The Atelier collection
+
+Ten still compositions and ten live works explore carved stone, lacquer, glass and brushed metal. Browse **Still Wallpapers** or **Live Wallpapers** in the studio.
+
+![Twenty still and live works from the Atelier collection](docs/media/atelier-collection.jpg)
+
 ## Download and install
 
 **Requires macOS 14.2 or later and a Metal-capable Mac.** The release contains Apple Silicon and Intel binaries. Tested on Apple Silicon.
@@ -30,6 +36,8 @@ Resonance is a native Mac live wallpaper app with **45 animated desktop wallpape
 2. Open the disk image and drag **Resonance** to **Applications**.
 3. Eject the image, open Resonance from Applications and look for the waveform icon in the menu bar.
 4. Choose **Open Resonance**, select a scene and click **Apply wallpaper**.
+
+**Updating from 2.2.1 or earlier:** Quit Resonance, open the new DMG and replace Resonance in Applications. Your saved settings and favorites carry over. Starting with 2.3.0, choose **Check for Updates…** in the menu bar to find future releases.
 
 The downloadable community build is ad-hoc signed and has no Apple notarization. macOS may block it on first launch. The release includes a SHA-256 digest, and you can also build directly from this source. [Apple's guidance on opening apps safely](https://support.apple.com/en-us/102445)
 

@@ -9,6 +9,9 @@ enum SceneID: Int, CaseIterable, Codable, Identifiable {
     case nacre = 25, saffron, petrol, caustics, lamina, loom, mercury, prism, carbon, echo
     case citron, alabaster, pistachio, mulberry, cornflower, tea, poppy, eucalyptus, flax, sorbet
     case yuzu, porcelain, morello, lichen, mica, pollen, counterpoint, guava, bistre, spearmint
+    case auric, vellum, claret, celadon, basalt, shell, folio, lapis, suede, opal
+    case quicksilk, honey, malachite, blush, nocturne, bronze, halation, oxide, iris, lagoon
+    var isStill: Bool { (Self.auric.rawValue...Self.opal.rawValue).contains(rawValue) }
     var id: Self { self }
     var isMusical: Bool {
         switch self {
@@ -19,6 +22,26 @@ enum SceneID: Int, CaseIterable, Codable, Identifiable {
     }
     private var catalog: (title: String, material: String, detail: String, symbol: String) {
         switch self {
+        case .auric: return ("Auric Register","Gold leaf","Relief depth","square.3.layers.3d")
+        case .vellum: return ("Vellum Arch","Limestone","Relief depth","square.3.layers.3d")
+        case .claret: return ("Claret Press","Burgundy lacquer","Relief depth","square.3.layers.3d")
+        case .celadon: return ("Celadon Flute","Celadon ceramic","Relief depth","square.3.layers.3d")
+        case .basalt: return ("Basalt Index","Basalt and brass","Relief depth","square.3.layers.3d")
+        case .shell: return ("Shell Cameo","Mother of pearl","Relief depth","square.3.layers.3d")
+        case .folio: return ("Ochre Folio","Saffron paper","Relief depth","square.3.layers.3d")
+        case .lapis: return ("Lapis Intaglio","Lapis lazuli","Relief depth","square.3.layers.3d")
+        case .suede: return ("Sable Suede","Brushed suede","Relief depth","square.3.layers.3d")
+        case .opal: return ("Opal Inset","Opaline enamel","Relief depth","square.3.layers.3d")
+        case .quicksilk: return ("Quicksilver Silk","Platinum satin","Relief depth","square.3.layers.3d")
+        case .honey: return ("Honey Veil","Amber resin","Relief depth","square.3.layers.3d")
+        case .malachite: return ("Malachite Current","Green lacquer","Relief depth","square.3.layers.3d")
+        case .blush: return ("Blush Membrane","Blush porcelain","Relief depth","square.3.layers.3d")
+        case .nocturne: return ("Indigo Nocturne","Indigo foil","Relief depth","square.3.layers.3d")
+        case .bronze: return ("Bronze Torsion","Brushed bronze","Relief depth","square.3.layers.3d")
+        case .halation: return ("Pearl Halation","Pearlescent glass","Relief depth","square.3.layers.3d")
+        case .oxide: return ("Oxide Passage","Copper oxide","Relief depth","square.3.layers.3d")
+        case .iris: return ("Iris Suture","Violet enamel","Relief depth","square.3.layers.3d")
+        case .lagoon: return ("Lagoon Lens","Aquamarine glass","Relief depth","square.3.layers.3d")
         case .aurora: return ("Liquid Aurora","Spectral silk","Fold density","water.waves")
         case .particles: return ("Ethereal Particles","Point field","Field spread","sparkles")
         case .chrome: return ("Liquid Chrome","Polished metal","Surface twist","circle.hexagongrid")
@@ -73,6 +96,26 @@ enum SceneID: Int, CaseIterable, Codable, Identifiable {
     var supportsCursor: Bool { [.obsidian,.glass,.nacre,.caustics,.mercury,.prism,.echo].contains(self) }
     var story: String {
         switch self {
+        case .auric: return "Fine gilded terraces rise from a graphite field."
+        case .vellum: return "An ivory arch casts a fine shadow across warm stone."
+        case .claret: return "Overlapping impressions cut a dark cherry surface."
+        case .celadon: return "A fan of glazed ribs opens from the lower corner."
+        case .basalt: return "A brass seam separates two broad basalt planes."
+        case .shell: return "A pale oval relief catches rose and ivory light."
+        case .folio: return "Offset folds cast narrow shadows across ochre paper."
+        case .lapis: return "A deep blue incised spiral turns through polished stone."
+        case .suede: return "A broad chocolate fold softens into the surrounding field."
+        case .opal: return "A rounded opal inset sits in a cool lilac ground."
+        case .quicksilk: return "A platinum fold travels across a dark satin sheet."
+        case .honey: return "Two translucent amber folds slide across each other."
+        case .malachite: return "Curved green strata drift through a deep lacquer field."
+        case .blush: return "A soft porcelain membrane rises between two moving centers."
+        case .nocturne: return "Indigo foil gathers into an asymmetric moving fan."
+        case .bronze: return "A burnished strip twists around a traveling crease."
+        case .halation: return "Concentric pearl edges breathe around an off-center aperture."
+        case .oxide: return "Broad oxidized copper plates slowly drift out of alignment."
+        case .iris: return "Two violet seams cross and slowly exchange depth."
+        case .lagoon: return "A pair of aquamarine lenses refracts moving bands of light."
         case .aurora: return "A pleated sheet of spectral silk twists through blue and violet light."
         case .particles: return "Thousands of small lights gather along a gently curving helix."
         case .chrome: return "A continuous platinum sculpture turns through a reflected studio."

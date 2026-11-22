@@ -2,14 +2,14 @@ import SwiftUI
 import ServiceManagement
 
 private enum Shelf: String, CaseIterable, Identifiable {
-    case discover = "Discover", music = "Music Reactive", live = "Live Wallpapers", favorites = "Favorites"
+    case discover = "Discover", music = "Music Reactive", live = "Live Wallpapers", still = "Still Wallpapers", favorites = "Favorites"
     var id: Self { self }
     var icon: String {
-        switch self { case .discover: return "square.grid.2x2"; case .music: return "waveform"; case .live: return "sparkle.magnifyingglass"; case .favorites: return "heart" }
+        switch self { case .discover: return "square.grid.2x2"; case .music: return "waveform"; case .live: return "sparkle.magnifyingglass"; case .still: return "photo"; case .favorites: return "heart" }
     }
 }
-private let exhibition: [SceneID] = [.citron,.morello,.cornflower,.yuzu,.mulberry,.mica,.pistachio,.lichen,.tea,.pollen,.guava,.eucalyptus,.sorbet,.counterpoint,.flax,.bistre,.poppy,.porcelain,.alabaster,.spearmint,.nacre,.obsidian,.saffron,.glass,.mercury,.prism,.bloom,.lamina,.petrol,.carbon,.echo,.caustics,.loom,.velvet,.golden]
-private func displayType(_ s: SceneID) -> String { s.isMusical ? "Music reactive" : "Live wallpaper" }
+private let exhibition: [SceneID] = [.auric,.claret,.basalt,.folio,.suede,.quicksilk,.malachite,.nocturne,.halation,.iris,.citron,.morello,.cornflower,.yuzu,.mulberry,.mica,.pistachio,.lichen,.tea,.pollen,.guava,.eucalyptus,.sorbet,.counterpoint,.flax,.bistre,.poppy,.porcelain,.alabaster,.spearmint,.nacre,.obsidian,.saffron,.glass,.mercury,.prism,.bloom,.lamina,.petrol,.carbon,.echo,.caustics,.loom,.velvet,.golden]
+private func displayType(_ s: SceneID) -> String { s.isStill ? "Still wallpaper" : (s.isMusical ? "Music reactive" : "Live wallpaper") }
 
 private struct Plate: View {
     let scene: SceneID, studio: MetalStudio?
@@ -74,7 +74,7 @@ struct Dashboard: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var matches: [SceneID] {
         (exhibition + SceneID.allCases.filter { !exhibition.contains($0) }).filter { scene in
-            (shelf == .discover || (shelf == .music && scene.isMusical) || (shelf == .live && !scene.isMusical) || (shelf == .favorites && state.prefs.favorites.contains(scene)))
+            (shelf == .discover || (shelf == .music && scene.isMusical) || (shelf == .live && !scene.isMusical && !scene.isStill) || (shelf == .still && scene.isStill) || (shelf == .favorites && state.prefs.favorites.contains(scene)))
                 && (search.isEmpty || scene.title.localizedCaseInsensitiveContains(search) || scene.material.localizedCaseInsensitiveContains(search))
         }
     }
@@ -202,7 +202,7 @@ private struct WallpaperDetail: View {
                     Picker("Music reactivity",selection:$state.prefs.response) { ForEach(Reactivity.allCases,id:\.self){Text($0.rawValue)} }.pickerStyle(.segmented).frame(maxWidth:450)
                     control("Music sensitivity",\.intensity,0...1)
                 }
-                HStack(spacing:24) { control("Animation speed",\.speed,0.15...2); control("Motion intensity",\.amount,0...1) }
+                if !scene.isStill { HStack(spacing:24) { control("Animation speed",\.speed,0.15...2); control("Motion intensity",\.amount,0...1) } }
                 if scene.supportsCursor {
                     HStack(spacing:24) { Toggle("Cursor interaction",isOn:tune(\.cursorEnabled)).toggleStyle(.switch)
                         if state.prefs[scene:scene].cursorEnabled { control("Cursor sensitivity",\.cursorGain,0...1) }

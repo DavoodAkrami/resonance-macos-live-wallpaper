@@ -326,3 +326,188 @@ fragment float4 art_spearmint(Surface in [[stage_in]],constant Uniforms &u [[buf
     c+=float3(.49,.79,.62)*exp(-abs(upper)*106.)*(.44+.88*u.energy.z);
     return finishArt(c,in,u);
 }
+
+ // Grazing light reveals each relief. Derivatives convert the height field to
+ // a surface normal, with the same scale on Retina and low-resolution displays.
+ float4 atelierFinish(Surface in, constant Uniforms &u, float height, float3 dark, float3 pigment) {
+     float2 slope=float2(dfdx(height),-dfdy(height))*u.canvas.y*(.14+.25*u.canvas.w);
+     float3 normal=normalize(float3(-slope,1.));
+     float3 reflection=reflect(float3(0,0,-1),normal);
+     float diffuse=saturate(dot(normal,normalize(float3(-.48,.68,.68))));
+     float3 color=mix(dark*.34,pigment,(.16+.54*diffuse)*saturate(.64+.33*height));
+     color+=pigment*.55*lobe(reflection.y+.33*reflection.x-.47,16.);
+     color+=mix(pigment,float3(1),.55)*.65*lobe(reflection.x-.21*reflection.y+.5,105.);
+     return finishArt(color,in,u);
+ }
+
+// Auric Register — Gold leaf
+fragment float4 art_auric(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float edge=p.y+.36*p.x+.13*cos(2.1*p.x);
+    float height=tanh(edge*5.)+.08*sin(42.*edge)*exp(-abs(edge)*3.);
+    return atelierFinish(in,u,height,float3(0.086,0.086,0.106),float3(0.788,0.608,0.322));
+}
+
+// Vellum Arch — Limestone
+fragment float4 art_vellum(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float arc=length((p-float2(.31,-.64))*float2(.84,1.))-.88;
+    float height=.62*tanh(12.*arc)+.12*cos(25.*arc)*exp(-3.*abs(arc));
+    return atelierFinish(in,u,height,float3(0.412,0.345,0.290),float3(0.937,0.855,0.745));
+}
+
+// Claret Press — Burgundy lacquer
+fragment float4 art_claret(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float a=length(p-float2(-.47,.18))-.72,b=length(p-float2(.5,-.22))-.66;
+    float height=.42*tanh(10.*a)+.58*tanh(14.*b);
+    return atelierFinish(in,u,height,float3(0.196,0.082,0.145),float3(0.710,0.420,0.455));
+}
+
+// Celadon Flute — Celadon ceramic
+fragment float4 art_celadon(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float2 q=p-float2(-1.75,-1.3);
+    float height=sin(23.*atan2(q.y,q.x))*.26+.16*length(q);
+    return atelierFinish(in,u,height,float3(0.145,0.294,0.282),float3(0.773,0.851,0.722));
+}
+
+// Basalt Index — Basalt and brass
+fragment float4 art_basalt(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float k=p.x+.45*p.y-.28;
+    float height=.47*abs(k)+.19*exp(-19.*abs(k))+.24*tanh(8.*(p.y-.4));
+    return atelierFinish(in,u,height,float3(0.141,0.145,0.169),float3(0.647,0.545,0.376));
+}
+
+// Shell Cameo — Mother of pearl
+fragment float4 art_shell(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float r=length((p-float2(.35,0))*float2(.72,1.));
+    float height=sqrt(max(.001,1.-min(1.,r*r)))+.036*cos(30.*r);
+    return atelierFinish(in,u,height,float3(0.439,0.329,0.396),float3(0.918,0.792,0.765));
+}
+
+// Ochre Folio — Saffron paper
+fragment float4 art_folio(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float z=p.y-.34*p.x;
+    float height=.34*tanh(15.*(z+.3))+.32*tanh(18.*(z-.18))-.22*tanh(11.*(p.x+.36));
+    return atelierFinish(in,u,height,float3(0.471,0.333,0.188),float3(0.898,0.722,0.424));
+}
+
+// Lapis Intaglio — Lapis lazuli
+fragment float4 art_lapis(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float2 q=p-float2(.4,-.14);
+    float r=length(q);
+    float height=.28*cos(12.*r-2.*atan2(q.y,q.x))*smoothstep(.04,.38,r);
+    return atelierFinish(in,u,height,float3(0.063,0.165,0.325),float3(0.447,0.624,0.769));
+}
+
+// Sable Suede — Brushed suede
+fragment float4 art_suede(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float d=p.y+.42*sin(1.4*p.x-.2);
+    float height=.58*exp(-5.*d*d)-.22*exp(-22.*(d+.39)*(d+.39));
+    return atelierFinish(in,u,height,float3(0.227,0.149,0.137),float3(0.776,0.584,0.514));
+}
+
+// Opal Inset — Opaline enamel
+fragment float4 art_opal(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float d=roundCut(rotate(p-float2(.28,.04),.32),float2(.68,.44),.25);
+    float height=.6*tanh(10.*d)+.08*exp(-90.*abs(d));
+    return atelierFinish(in,u,height,float3(0.392,0.369,0.498),float3(0.827,0.839,0.918));
+}
+
+// Quicksilver Silk — Platinum satin
+fragment float4 art_quicksilk(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float d=p.y+.46*sin(p.x*2.+t)+.13*cos(3.*p.x-t*.6);
+    float height=.7*tanh(d*4.)+.12*cos(d*16.+t);
+    return atelierFinish(in,u,height,float3(0.145,0.161,0.212),float3(0.714,0.753,0.824));
+}
+
+// Honey Veil — Amber resin
+fragment float4 art_honey(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float a=p.y-.27*cos(2.*p.x+t),b=p.y+.34*sin(p.x*2.5-t*.7);
+    float height=.46*tanh(a*7.)+.48*tanh((b+.19)*6.);
+    return atelierFinish(in,u,height,float3(0.314,0.153,0.067),float3(0.902,0.643,0.294));
+}
+
+// Malachite Current — Green lacquer
+fragment float4 art_malachite(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float z=length((p-float2(.55*sin(t),-.44))*float2(.68,1.))+.1*sin(3.*p.y+t);
+    float height=.28*cos(z*15.-t);
+    return atelierFinish(in,u,height,float3(0.063,0.208,0.180),float3(0.498,0.765,0.616));
+}
+
+// Blush Membrane — Blush porcelain
+fragment float4 art_blush(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float a=length(p-float2(.7*cos(t),.28*sin(t))),b=length(p-float2(-.7*cos(t+.7),-.32));
+    float height=exp(-2.*a*a)-.78*exp(-3.*b*b);
+    return atelierFinish(in,u,height,float3(0.388,0.239,0.290),float3(0.941,0.733,0.702));
+}
+
+// Indigo Nocturne — Indigo foil
+fragment float4 art_nocturne(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float2 q=p-float2(-1.3,.85);
+    float a=atan2(q.y,q.x);
+    float height=.24*cos(10.*a+2.*sin(t+length(q)))*smoothstep(0.,.6,length(q));
+    return atelierFinish(in,u,height,float3(0.141,0.118,0.267),float3(0.620,0.604,0.796));
+}
+
+// Bronze Torsion — Brushed bronze
+fragment float4 art_bronze(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float z=p.y*cos(t*.52+p.x)+.35*sin(p.x*1.7-t);
+    float height=.8*exp(-5.*z*z)+.16*z;
+    return atelierFinish(in,u,height,float3(0.263,0.169,0.145),float3(0.808,0.592,0.392));
+}
+
+// Pearl Halation — Pearlescent glass
+fragment float4 art_halation(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float r=length((p-float2(.42,.18*sin(t)))*float2(.76+.10*cos(t),1.));
+    float height=.5*tanh((r-.55-.10*sin(t))*8.)+.16*cos(19.*r-t);
+    return atelierFinish(in,u,height,float3(0.400,0.388,0.451),float3(0.898,0.843,0.808));
+}
+
+// Oxide Passage — Copper oxide
+fragment float4 art_oxide(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float2 q=rotate(p,.39+.09*sin(t));
+    float height=.5*tanh((q.x-.23*cos(t))*7.)+.32*tanh((q.y+.32*sin(t*.81))*11.);
+    return atelierFinish(in,u,height,float3(0.180,0.259,0.251),float3(0.769,0.565,0.412));
+}
+
+// Iris Suture — Violet enamel
+fragment float4 art_iris(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float a=p.y-.42*sin(1.9*p.x+t),b=p.y+.44*sin(1.7*p.x-t);
+    float height=.49*exp(-13.*a*a)-.45*exp(-12.*b*b);
+    return atelierFinish(in,u,height,float3(0.196,0.125,0.243),float3(0.698,0.529,0.776));
+}
+
+// Lagoon Lens — Aquamarine glass
+fragment float4 art_lagoon(Surface in [[stage_in]], constant Uniforms &u [[buffer(0)]]) {
+    float2 p=galleryUV(in,u);
+    float t=u.canvas.z*.32;
+    float a=length(p-float2(.49*cos(t),.26*sin(t))),b=length(p-float2(-.62,.25*cos(t)));
+    float height=.33*cos(5.*a+t*.6)+.26*cos(6.*b-t*.72);
+    return atelierFinish(in,u,height,float3(0.063,0.200,0.239),float3(0.420,0.780,0.773));
+}

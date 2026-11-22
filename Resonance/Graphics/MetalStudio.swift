@@ -8,7 +8,7 @@ struct FrameUniforms {
     var lowSpectrum: SIMD4<Float>, highSpectrum: SIMD4<Float>
     var gesture: SIMD4<Float>
     init(size: CGSize, scene: SceneID, tuning: Tuning, motion: Motion) {
-        canvas = [Float(size.width), Float(size.height), motion.time, Float(tuning.detail)]
+        canvas = [Float(size.width), Float(size.height), scene.isStill ? 0 : motion.time, Float(tuning.detail)]
         gesture = SIMD4(scene.supportsCursor && tuning.cursorEnabled ? motion.cursor : .zero, Float(tuning.amount))
         energy = scene.isMusical ? motion.energy : .zero
         let spectrum = scene.isMusical ? motion.spectrum : .zero
@@ -123,16 +123,16 @@ final class CanvasView: MTKView, MTKViewDelegate {
     private func resize() {
         let factor = min(window?.backingScaleFactor ?? 1, desktop ? 1.55 : 2) * scale
         let size = CGSize(width: max(1,round(bounds.width*factor)),height: max(1,round(bounds.height*factor)))
-        if drawableSize != size { drawableSize = size }
+        if drawableSize != size { drawableSize = size; if isPaused && window?.isVisible == true { draw() } }
     }
     func refresh() {
         guard let state, let window else { isPaused = true; return }
         let p = state.prefs
         let visible = desktop ? (!p.reduceCovered || window.occlusionState.contains(.visible)) : window.occlusionState.contains(.visible)
-        let shouldPause = state.suspended || p.paused || !window.isVisible || !visible || (!desktop && isHiddenOrHasHiddenAncestor)
+        let scene = desktop ? p.scene : (previewScene ?? p.scene)
+        let shouldPause = scene.isStill || state.suspended || p.paused || !window.isVisible || !visible || (!desktop && isHiddenOrHasHiddenAncestor)
         if isPaused != shouldPause { last = CACurrentMediaTime(); isPaused = shouldPause }
         let quiet = state.conserve || p.quality == .quiet
-        let scene = desktop ? p.scene : (previewScene ?? p.scene)
         let activeArt = !scene.isMusical && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         let target = quiet ? 30 : (p.quality == .fluid || state.hearing || activeArt ? 60 : 30)
         let fps = (gpuMS > 14 && target == 60 && p.quality == .adaptive) ? 30 : target

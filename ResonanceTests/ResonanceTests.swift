@@ -83,7 +83,8 @@ final class ResonanceTests: XCTestCase {
                 reactive.tint = [0.3,0.6,0.2]; reactive.spectrum = .one
                 XCTAssertEqual(initial,try pixels(reactive),scene.title)
             }
-            XCTAssertNotEqual(initial,try pixels(later),scene.title)
+            if scene.isStill { XCTAssertEqual(initial,try pixels(later),scene.title) }
+            else { XCTAssertNotEqual(initial,try pixels(later),scene.title) }
             let values = stride(from:0,to:initial.count,by:4).map { initial[$0] }
             XCTAssertGreaterThan(Int(values.max()!) - Int(values.min()!),20,scene.title)
         }
@@ -417,7 +418,7 @@ extension ResonanceTests {
         }
         var visited = Set<SceneID>(), scene = SceneID.aurora
         repeat { XCTAssertTrue(visited.insert(scene).inserted); XCTAssertEqual(scene.step(1).step(-1),scene); scene = scene.step(1) } while scene != .aurora
-        XCTAssertEqual(visited,Set(SceneID.allCases)); XCTAssertEqual(visited.count,45)
+        XCTAssertEqual(visited,Set(SceneID.allCases)); XCTAssertEqual(visited.count,65)
         XCTAssertEqual(visited.filter(\.isMusical).count,20)
     }
 
@@ -440,7 +441,7 @@ extension ResonanceTests {
             for palette in Palette.allCases where palette != .track {
                 XCTAssertTrue(looks.insert(try pixels(scene,palette:palette)).inserted,"\(scene.title), \(palette.rawValue)")
             }
-            if scene.rawValue >= 25 {
+            if scene.rawValue >= 25 && !scene.isStill {
                 let base = try pixels(scene,time:4), next = try pixels(scene,time:4+1/60)
                 let step = difference(base,next), passage = difference(base,try pixels(scene,time:8))
                 XCTAssertGreaterThan(step,0,scene.title); XCTAssertLessThan(step,2.0,scene.title)

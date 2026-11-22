@@ -41,12 +41,57 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
             let i = NSMenuItem(title: s,action: sel,keyEquivalent: key); i.target = self; menu.addItem(i)
         }
         entry("Open Resonance",#selector(openStudio)); entry("Settings…",#selector(settings),",")
+        entry("Check for Updates…", #selector(checkUpdates))
         menu.addItem(.separator()); entry(state.prefs.scene.title,nil)
         entry("Previous scene",#selector(previous)); entry("Next scene",#selector(next))
         entry(state.prefs.paused ? "Resume animations" : "Pause animations",#selector(pause))
         entry(state.prefs.enabled ? "Restore normal desktop" : "Enable live wallpaper",#selector(toggleDesktop))
         menu.addItem(.separator()); entry(state.hearing ? "\(state.prefs.source.rawValue) · Receiving audio" : state.audioStatus,nil)
         menu.addItem(.separator()); entry("Quit Resonance",#selector(quit),"q")
+    }
+    private var checkingUpdate = false
+    @objc private func checkUpdates() {
+        guard !checkingUpdate else { return }
+        checkingUpdate = true
+        Task { @MainActor in
+            defer { checkingUpdate = false }
+            let base = "https://github.com/DavoodAkrami/resonance-macos-live-wallpaper/releases"
+            let alert = NSAlert()
+            var destination: URL?
+            do {
+                struct Release: Decodable {
+                    let tag_name: String
+                    let assets: [Asset]
+                    struct Asset: Decodable { let name: String }
+                }
+                let endpoint = URL(string: "https://api.github.com/repos/DavoodAkrami/resonance-macos-live-wallpaper/releases/latest")!
+                let (data, response) = try await URLSession.shared.data(from: endpoint)
+                guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.badServerResponse) }
+                let release = try JSONDecoder().decode(Release.self, from: data)
+                guard release.tag_name.range(of: #"^v[0-9]+\.[0-9]+\.[0-9]+$"#, options: .regularExpression) != nil else { throw URLError(.cannotParseResponse) }
+                let version = String(release.tag_name.dropFirst())
+                let current = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+                if current.compare(version, options: .numeric) == .orderedAscending {
+                    let name = "Resonance-\(version)-macOS.dmg"
+                    let ready = release.assets.contains { $0.name == name }
+                    alert.messageText = "Resonance \(version) is available"
+                    alert.informativeText = "After downloading, quit Resonance and drag the new app into Applications. Your library settings will carry over."
+                    destination = URL(string: ready ? "\(base)/download/\(release.tag_name)/\(name)" : "\(base)/latest")
+                    alert.addButton(withTitle: ready ? "Download update" : "View release")
+                } else {
+                    alert.messageText = "Resonance is up to date"
+                    alert.informativeText = "Installed version \(current)"
+                }
+            } catch {
+                alert.messageText = "Couldn’t check for updates"
+                alert.informativeText = "You can check the latest release on GitHub."
+                destination = URL(string: base + "/latest")
+                alert.addButton(withTitle: "View releases")
+            }
+            alert.addButton(withTitle: destination == nil ? "OK" : "Later")
+            NSApp.activate(ignoringOtherApps: true)
+            if alert.runModal() == .alertFirstButtonReturn, let destination { NSWorkspace.shared.open(destination) }
+        }
     }
     @objc private func openStudio() { state.settingsOpen = false; showPanel() }
     @objc private func settings() { state.settingsOpen = true; showPanel() }
